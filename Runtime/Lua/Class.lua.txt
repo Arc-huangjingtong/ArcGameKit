@@ -1,0 +1,434 @@
+﻿-- Guanghai
+-- 类库
+---[[    在lua脚本上创建lua脚本    建议使用静态方法
+-- class = self:CreateLua(Class.text, Class.name)
+-- class.Testing()
+function Testing()
+    print("成功接入Class")
+end
+-- ]]
+
+---[[命名空间
+local engine = CS.UnityEngine
+local Vector2 = engine.Vector2
+local Vector3 = engine.Vector3
+local Vector4 = engine.Vector4
+local AudioManager = CS.ComSystem.AudioManager
+-- ]]
+
+---[[   随机数组
+function ListRandom(list)
+    -- 随机数
+    math.randomseed(os.time())
+    for i = 1, #list do
+        local index = math.random(#list)
+        if index ~= i then
+            local temp = list[i]
+            list[i] = list[index]
+            list[index] = temp
+        end
+    end
+end
+-- ]]
+---[[   枚举
+function CreatEnumTable(tbl, index)
+
+    local enumtbl = {}
+    local enumindex = index or 0
+    for i, v in ipairs(tbl) do
+        enumtbl[v] = enumindex + i
+    end
+    return enumtbl
+end
+--[[    使用方法
+      enum = { "Max", "Mix" }
+      enums = CreatEnumTable(enum)
+      print(enums.Max)
+      print(enum[2])
+      print(CreatEnumTable(enum, 2))
+   --]]
+-- ]]
+
+---[[ Vector数学公式
+---需使用的命名空间
+-- local engine = CS.UnityEngine
+-- local Vector2 = engine.Vector2
+-- local Vector3 = engine.Vector3
+-- local Vector4 = engine.Vector4
+---[[   转换
+function Vector3ToVector2(v1)
+    return Vector2(v1.x, v1.y)
+end
+function Vector4ToVector2(v1)
+    return Vector2(v1.x, v1.y)
+end
+function Vector2ToVector3(v2)
+    return Vector3(v2.x, v2.y, 0)
+end
+function Vector4ToVector3(v1)
+    return Vector3(v1.x, v1.y, v1.z)
+end
+function Vector2ToVector4(v2)
+    return Vector4(v2.x, v2.y, 0, 0)
+end
+function Vector3ToVector4(v1)
+    return Vector4(v1.x, v1.y, v1.z, 0)
+end
+
+-- ]]
+---[[   运算  注意此运算也可以实现类型转换，可高转低例：v4 转 v2 或 v3 不可低转高
+-- Vector2
+function AddVector2(v1, v2)
+    if v1 == nil or v2 == nil then
+        return Vector2.zero
+    end
+    local vx = v1.x + v2.x
+    local vy = v1.y + v2.y
+    return Vector2(vx, vy)
+end
+function SubVector2(v1, v2)
+    if v1 == nil or v2 == nil then
+        return Vector2.zero
+    end
+    local vx = v1.x - v2.x
+    local vy = v1.y - v2.y
+    return Vector2(vx, vy)
+end
+function MulVector2(v1, v2)
+    if v1 == nil or v2 == nil then
+        return Vector2.zero
+    end
+    local vx = v1.x * v2.x
+    local vy = v1.y * v2.y
+    return Vector2(vx, vy)
+end
+function DivVector2(v1, v2)
+    if v1 == nil or v2 == nil then
+        return Vector2.zero
+    end
+    local vx = v1.x / v2.x
+    local vy = v1.y / v2.y
+    return Vector2(vx, vy)
+end
+-- Vector3
+function AddVector3(v1, v2)
+    v = AddVector2(v1, v2)
+    vz = v1.z + v2.z
+    return Vector3(v.x, v.y, vz)
+end
+function SubVector3(v1, v2)
+    v = SubVector2(v1, v2)
+    vz = v1.z - v2.z
+    return Vector3(v.x, v.y, vz)
+end
+function MulVector3(v1, v2)
+    v = MulVector2(v1, v2)
+    vz = v1.z * v2.z
+    return Vector3(v.x, v.y, vz)
+end
+function DivVector3(v1, v2)
+    v = DivVector2(v1, v2)
+    vz = v1.z / v2.z
+    return Vector3(v.x, v.y, vz)
+end
+-- Vector4
+function AddVector4(v1, v2)
+    v = AddVector3(v1, v2)
+    vw = v1.w + v2.w
+    return Vector4(v.x, v.y, v.z, vw)
+end
+function SubVector4(v1, v2)
+    v = SubVector3(v1, v2)
+    return Vector4(v.x, v.y, v.z, vw)
+end
+function MulVector4(v1, v2)
+    v = MulVector3(v1, v2)
+    return Vector4(v.x, v.y, v.z, vw)
+end
+function DivVector4(v1, v2)
+    v = DivVector3(v1, v2)
+    return Vector4(v.x, v.y, v.z, vw)
+end
+-- ]]
+
+-- ]]
+
+---[[   类型转换
+function ToStringEx(value)
+    if type(value) == 'table' then
+        return TableToStr(value)
+    elseif type(value) == 'string' then
+        return "\'" .. value .. "\'"
+    else
+        return tostring(value)
+    end
+end
+-- 字符串转表
+function StrToTable(str)
+    local str = string.gsub(str, "\r\n", "")
+    if str == nil or type(str) ~= "string" then
+        return
+    end
+
+    return load("return " .. str)()
+end
+-- 表转字符串
+function TableToStr(t)
+    if t == nil then
+        return ""
+    end
+    local retstr = "{"
+
+    local i = 1
+    for key, value in pairs(t) do
+        local signal = ","
+        if i == 1 then
+            signal = ""
+        end
+
+        if key == i then
+            retstr = retstr .. signal .. ToStringEx(value)
+        else
+            if type(key) == 'number' or type(key) == 'string' then
+                retstr = retstr .. signal .. '[' .. ToStringEx(key) .. "]=" .. ToStringEx(value)
+            else
+                if type(key) == 'userdata' then
+                    retstr = retstr .. signal .. "*s" .. TableToStr(getmetatable(key)) .. "*e" .. "=" ..
+                                 ToStringEx(value)
+                else
+                    retstr = retstr .. signal .. key .. "=" .. ToStringEx(value)
+                end
+            end
+        end
+
+        i = i + 1
+    end
+
+    retstr = retstr .. "}"
+    return retstr
+end
+-- 字符串转表，做排除空格与换行操作
+function GetTheCorrectData(data)
+    local str = string.gsub(tostring(data), "\r\n", "")
+    local a, b = string.find(str, "}}") -- 分割
+    str = string.sub(str, 0, b)
+    return StrToTable(str)
+end
+--[[    使用方法
+local str = string.gsub(tostring(data), "\r\n", "")
+    local a, b = string.find(str, "}}")--分割
+    str = string.sub(str, 0, b)
+    local t2 = StrToTable(str)
+    print(t2[2].id)
+    -------------------------------------------------------------------------------
+    engine.GUIUtility.systemCopyBuffer = class.TableToStr(data)--把转出来的字符串复制
+--]]
+-- ]]
+
+---[[   获取精灵
+---需要使用的命名空间
+---local engine = CS.UnityEngine
+---local Vector2 = engine.Vector2
+-- number 切割数量 VectorInt
+function GetSpriteLowerLeft(texture2d, number)
+    if texture2d == nil then
+        print("没有设置拼图背景，游戏代码终止")
+        return false
+    end
+
+    local x = math.ceil(texture2d.width / number.x)
+    local y = math.ceil(texture2d.height / number.y)
+
+    local sprite = {}
+    local id = 1
+    local v2 = Vector2(0.5, 0.5)
+
+    for i = 1, number.x do
+        for j = 1, number.y do
+            sprite[id] = engine.Sprite.Create(texture2d, engine.Rect(x * (i - 1), y * (j - 1), x, y), v2, 100, 0,
+                             engine.SpriteMeshType.FullRect)
+            sprite[id].name = id
+            id = id + 1
+        end
+    end
+    return sprite
+end
+
+function GetSpriteUpperRight(texture2d, number)
+
+    if texture2d == nil then
+        print("没有设置拼图背景，游戏代码终止")
+        return false
+    end
+
+    local x = math.ceil(texture2d.width / number.x)
+    local y = math.ceil(texture2d.height / number.y)
+
+    local sprite = {}
+    local id = 1
+    local v2 = Vector2(0.5, 0.5)
+
+    for i = 1, number.y do
+        for j = 1, number.x do
+            sprite[id] = engine.Sprite.Create(texture2d, engine.Rect(x * (j - 1), y * (number.y - i), x, y), v2, 100, 0,
+                             engine.SpriteMeshType.FullRect)
+            sprite[id].name = id
+            id = id + 1
+        end
+    end
+    return sprite
+end
+
+-- ]]
+
+---[[   判断重叠
+-- 获取单个轴的计算位置
+function GetAxis(value1, value2)
+    local nub = 0
+    if value1 > value2 then
+        nub = math.abs(value1) - math.abs(value2)
+    else
+        nub = math.abs(value2) - math.abs(value1)
+    end
+    return math.abs(nub)
+end
+-- 判断面积
+function GetOverlapAreaOfRectangle(rect1, rect2)
+    x = GetAxis(rect1.anchoredPosition.x, rect2.anchoredPosition.x)
+    y = GetAxis(rect1.anchoredPosition.y, rect2.anchoredPosition.y)
+
+    local w = rect1.rect.width - x
+    local h = rect1.rect.height - y
+    return w * h
+end
+-- 判断重叠是否正确
+-- < name="transform">需要判断的rect</param>
+-- < name="area">重叠值</param>
+-- < name="percentage">比例</param>
+function IsItFeasible(Rect, area, percentage)
+    local a = (Rect.rect.height * Rect.rect.width) * percentage
+    if (area > a) then
+        return true;
+    else
+        return false;
+    end
+end
+--[[    使用方法
+local 重叠面积 = GetOverlapAreaOfRectangle(第一个Rect, 第二个Rect)
+
+--判断重叠面积
+if IsItFeasible(第二个Rect, 重叠面积, 判断比例（0.7 = 70%）) then
+当第二个Rect相对于第一个Rect的重叠面积在70%以上，则返回true
+注！！！
+一、是Rect2在Rect1身上占的比例
+二、此判断环境应两个Rect在同一个坐标系内，判断的是本地坐标而非世界空间坐标
+]]
+-- ]]
+
+---[[    弹窗事件
+---此方法基于编辑器弹窗接口
+function PopUpEvent(title)
+    if CS.ComSystem.PanelManager.GetPanel("MessageBox") == nil then
+        print("非编辑器模式，跳过此判断")
+        return
+    end
+    local message = CS.ComSystem.PanelManager.GetPanel("MessageBox").panelBase
+    message:SetDefault() -- 重置
+    message.panel.receiveBackEvents = true
+    message.Title.text = title -- 标题
+    
+    return message
+end
+-- 使用一个按钮方法
+function PopUpEvent1(title, name_1, Event1)
+    local message = PopUpEvent(title)
+    if message == nil then
+        print("非编辑器模式，跳过此判断")
+        return
+    end
+    message.button1_Text.text = name_1 -- 建议取消
+    
+    message.button1.onClick:AddListener(Event1)
+    return message
+end
+-- 使用两个按钮方法
+function PopUpEvent2(title, name_1, Event1, name_2, Event2)
+    local message = PopUpEvent1(title, name_1, Event1)
+    if message == nil then
+        print("非编辑器模式，跳过此判断")
+        return
+    end
+    message.button2_Text.text = name_2 -- 建议确定
+    
+    message.button2.onClick:AddListener(Event2)
+    return message
+end
+-- 使用三个按钮方法
+function PopUpEvent3(title, name_1, Event1, name_2, Event2, name_3, Event3)
+    local message = PopUpEvent2(title, name_1, Event1, name_2, Event2)
+    if message == nil then
+        print("非编辑器模式，跳过此判断")
+        return
+    end
+    message.button3_Text.text = name_3 -- 建议确定
+    
+    message.button3.onClick:AddListener(Event3)
+    return message
+end
+-- 使用
+-- local prompt = "<size=30>内容"
+-- local message = class.PopUpEvent(nil)
+-- if message ~= nil then
+--    message.panel:Open(prompt, false)
+-- end
+-- message.panel:Open(prompt, false)--自己打开
+-- ]]
+
+---[[    声音事件0
+---此方法基于编辑器弹窗接口
+---需要使用到的命名空间
+---AudioManager =  CS.ComSystem.AudioManager
+function SetAudioSoutceOutputSE(audioSoutce)
+    audioSoutce.outputAudioMixerGroup = AudioManager.GetAudioMixerGroup("SE")
+end
+function SetAudioSoutceOutputBGM(audioSoutce)
+    audioSoutce.outputAudioMixerGroup = AudioManager.GetAudioMixerGroup("BGM")
+end
+function SetAudioSoutceOutputRole(audioSoutce)
+    audioSoutce.outputAudioMixerGroup = AudioManager.GetAudioMixerGroup("Role")
+end
+-- ]]
+
+---[[   Steam 成就系统
+---解锁成就
+function SteamFucn(SteamAPI)
+    local steamData = CS.AVG.Core.Cmd()
+    steamData.text = "Event steam SetAchievement " .. SteamAPI
+    local steamCodes = CS.System.Collections.Generic.List(CS.AVG.Core.Code)()
+    steamCodes:Add(steamData)
+    if CS.AVG.Core.AvgCore.main ~= nil then
+        CS.AVG.Core.AvgCore.main:Executor(steamCodes)
+        print(" end")
+    end
+    print(steamData.text)
+end
+-- ]]
+
+---[[   二周目
+-- 读取
+function FileExists(fileName)
+    if fileName == nil or fileName == "" then
+        print("标识输入为空")
+        return
+    end
+    return CS.ComSystem.FileManager.FileExists("ICS/" .. fileName)
+end
+-- 写入
+function WriteString(fileName)
+    if fileName == nil or fileName == "" then
+        print("标识输入为空")
+        return
+    end
+    CS.ComSystem.FileManager.WriteString("ICS/" .. fileName, "true")
+end
+-- ]]

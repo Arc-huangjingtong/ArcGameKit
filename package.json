@@ -1,0 +1,22 @@
+{
+  "name": "ArcGameKit",
+  "version": "1.0.0",
+  "displayName": "Arc的个人开发工具包",
+  "description": "Test",
+  "unity": "2022.2",
+  "dependencies": 
+  {
+    "com.unity.textmeshpro": "3.0.0",
+    "com.unity.inputsystem": "1.2.0"
+  },
+  "keywords": 
+  [
+    "Hai",
+    "Guanghai"
+  ],
+  "author": 
+  {
+    "name": "Arc",
+    "email": "2973564608@qq.com"
+  }
+}
